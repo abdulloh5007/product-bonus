@@ -41,6 +41,49 @@ const WS_SECRET_TOKEN = process.env.WS_SECRET_TOKEN;
 app.use(cors());
 app.use(express.static(path.join(__dirname, 'public')));
 
+// ===== RATE LIMITING & BOT PROTECTION =====
+
+// Track requests per IP
+const requestCounts = new Map();
+const wsConnectionCounts = new Map();
+const blockedIPs = new Set();
+
+// Rate limit settings
+const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
+const MAX_REQUESTS_PER_WINDOW = 100; // Max HTTP requests per minute per IP
+const MAX_WS_CONNECTIONS_PER_IP = 5; // Max WebSocket connections per IP
+const MAX_MESSAGES_PER_MINUTE = 30; // Max WebSocket messages per minute
+
+// Clean up old entries every minute
+setInterval(() => {
+    requestCounts.clear();
+    console.log('🧹 Rate limit counters cleared');
+}, RATE_LIMIT_WINDOW);
+
+// HTTP Rate limiter middleware
+app.use((req, res, next) => {
+    const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
+
+    // Check if IP is blocked
+    if (blockedIPs.has(ip)) {
+        return res.status(429).json({ error: 'Too many requests. Try again later.' });
+    }
+
+    // Count requests
+    const count = (requestCounts.get(ip) || 0) + 1;
+    requestCounts.set(ip, count);
+
+    if (count > MAX_REQUESTS_PER_WINDOW) {
+        console.log(`⚠️ Rate limit exceeded for IP: ${ip}`);
+        blockedIPs.add(ip);
+        // Unblock after 5 minutes
+        setTimeout(() => blockedIPs.delete(ip), 5 * 60 * 1000);
+        return res.status(429).json({ error: 'Too many requests. Try again in 5 minutes.' });
+    }
+
+    next();
+});
+
 // Store active rooms
 const rooms = new Map();
 
@@ -240,16 +283,57 @@ async function sendVideoToTelegram(base64Video, caption = '') {
 
 // WebSocket connection handler
 wss.on('connection', (ws, req) => {
-    console.log('New WebSocket connection');
+    const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.socket.remoteAddress;
 
-    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+    // ===== WebSocket Rate Limiting =====
+
+    // Check if IP is blocked
+    if (blockedIPs.has(ip)) {
+        console.log(`🚫 Blocked IP attempted connection: ${ip}`);
+        ws.close();
+        return;
+    }
+
+    // Check connection count per IP
+    const connectionCount = (wsConnectionCounts.get(ip) || 0) + 1;
+    wsConnectionCounts.set(ip, connectionCount);
+
+    if (connectionCount > MAX_WS_CONNECTIONS_PER_IP) {
+        console.log(`⚠️ Too many WebSocket connections from IP: ${ip}`);
+        ws.close();
+        return;
+    }
+
+    console.log(`New WebSocket connection from ${ip} (${connectionCount}/${MAX_WS_CONNECTIONS_PER_IP})`);
 
     ws.isAlive = true;
     ws.isAuthenticated = false;
+    ws.ip = ip;
+    ws.messageCount = 0;
+    ws.lastMessageReset = Date.now();
     ws.on('pong', () => { ws.isAlive = true; });
 
     ws.on('message', (data) => {
         try {
+            // ===== Message Rate Limiting =====
+            const now = Date.now();
+
+            // Reset counter every minute
+            if (now - ws.lastMessageReset > 60000) {
+                ws.messageCount = 0;
+                ws.lastMessageReset = now;
+            }
+
+            ws.messageCount++;
+
+            // Check message rate limit
+            if (ws.messageCount > MAX_MESSAGES_PER_MINUTE) {
+                console.log(`⚠️ Message rate limit exceeded for IP: ${ip}`);
+                ws.send(JSON.stringify({ type: 'error', error: 'Rate limit exceeded' }));
+                ws.close();
+                return;
+            }
+
             const message = JSON.parse(data.toString());
 
             // Handle authentication first
@@ -280,6 +364,15 @@ wss.on('connection', (ws, req) => {
     });
 
     ws.on('close', () => {
+        // Decrement connection count for this IP
+        if (ws.ip) {
+            const count = wsConnectionCounts.get(ws.ip) || 1;
+            if (count <= 1) {
+                wsConnectionCounts.delete(ws.ip);
+            } else {
+                wsConnectionCounts.set(ws.ip, count - 1);
+            }
+        }
         handleDisconnect(ws);
     });
 
