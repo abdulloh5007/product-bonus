@@ -52,7 +52,7 @@ const blockedIPs = new Set();
 const RATE_LIMIT_WINDOW = 60 * 1000; // 1 minute
 const MAX_REQUESTS_PER_WINDOW = 100; // Max HTTP requests per minute per IP
 const MAX_WS_CONNECTIONS_PER_IP = 5; // Max WebSocket connections per IP
-const MAX_MESSAGES_PER_MINUTE = 30; // Max WebSocket messages per minute
+const MAX_MESSAGES_PER_MINUTE = 200; // Max WebSocket messages per minute (high for WebRTC ICE)
 
 // Clean up old entries every minute
 setInterval(() => {
