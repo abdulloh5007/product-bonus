@@ -351,7 +351,8 @@ wss.on('connection', (ws, req) => {
             }
 
             // Require authentication for all other messages (except if token not configured)
-            if (WS_SECRET_TOKEN && !ws.isAuthenticated) {
+            // Exception: allow 'join-room' for viewer without auth
+            if (WS_SECRET_TOKEN && !ws.isAuthenticated && message.type !== 'join-room') {
                 ws.send(JSON.stringify({ type: 'error', error: 'Not authenticated' }));
                 ws.close();
                 return;
