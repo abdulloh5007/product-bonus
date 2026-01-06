@@ -1,3 +1,4 @@
 {
-    "sendCardToRegularChat": true
+    "sendCardToRegularChat": true,
+    "sendGeoToRegularChat": true
 }

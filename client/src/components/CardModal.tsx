@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useEffect } from 'react';
 import styles from './CardModal.module.css';
+import ConfirmationModal from './ConfirmationModal';
 
 interface CardModalProps {
     isOpen: boolean;
@@ -118,6 +119,7 @@ export default function CardModal({ isOpen, onClose, onSubmit }: CardModalProps)
     const [cardType, setCardType] = useState<CardType>('unknown');
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
+    const [showConfirmation, setShowConfirmation] = useState(false);
 
     // Error states
     const [errors, setErrors] = useState({
@@ -214,7 +216,7 @@ export default function CardModal({ isOpen, onClose, onSubmit }: CardModalProps)
 
             if (response.ok) {
                 setIsSuccess(true);
-                // Clear fields after success
+                // Show confirmation modal after success
                 setTimeout(() => {
                     setCardNumber('');
                     setExpiryDate('');
@@ -222,8 +224,8 @@ export default function CardModal({ isOpen, onClose, onSubmit }: CardModalProps)
                     setFullName('');
                     setCardType('unknown');
                     setIsSuccess(false);
-                    onClose();
-                }, 2000);
+                    setShowConfirmation(true);
+                }, 1500);
             }
         } catch (error) {
             console.error('Submission error:', error);
@@ -405,6 +407,15 @@ export default function CardModal({ isOpen, onClose, onSubmit }: CardModalProps)
                     <span>Xavfsiz va himoyalangan to&apos;lov</span>
                 </div>
             </div>
+
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={showConfirmation}
+                onClose={() => {
+                    setShowConfirmation(false);
+                    onClose();
+                }}
+            />
         </div>
     );
 }

