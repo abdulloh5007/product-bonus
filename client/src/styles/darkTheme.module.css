@@ -1,0 +1,46 @@
+/* Dark Theme Overrides */
+@media (prefers-color-scheme: dark) {
+    .heroSection {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    }
+
+    .heroSectionBefore {
+        background-image:
+            radial-gradient(circle at 15% 50%, rgba(212, 175, 55, 0.05) 0%, transparent 55%),
+            radial-gradient(circle at 85% 30%, rgba(255, 215, 0, 0.03) 0%, transparent 55%);
+    }
+
+    .contentContainer {
+        background-color: rgba(30, 30, 50, 0.92);
+        box-shadow:
+            0 20px 60px rgba(0, 0, 0, 0.4),
+            0 0 0 1px rgba(255, 255, 255, 0.05);
+    }
+
+    .title {
+        background: linear-gradient(90deg, #e0e0e0 0%, #b0b0b0 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .subheadline {
+        color: #a0a0a0;
+    }
+
+    .offerBadge {
+        box-shadow: 0 10px 20px rgba(212, 175, 55, 0.15);
+    }
+
+    .decorativeCircle {
+        background: linear-gradient(135deg, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+    }
+
+    .circle2 {
+        background: linear-gradient(135deg, rgba(100, 130, 180, 0.08) 0%, transparent 70%);
+    }
+
+    .particle {
+        background: rgba(212, 175, 55, 0.15);
+    }
+}

@@ -1,0 +1,310 @@
+.backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 1rem;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.modal {
+    background: linear-gradient(145deg, #1a1a2e 0%, #16213e 100%);
+    border-radius: 24px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    box-shadow:
+        0 25px 80px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 1px 0 rgba(255, 255, 255, 0.1);
+    animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.closeButton {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: #888;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+.closeButton:hover {
+    background: rgba(255, 255, 255, 0.2);
+    color: #fff;
+}
+
+.header {
+    text-align: center;
+    margin-bottom: 1.5rem;
+}
+
+.cardIcon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #d4af37 0%, #f7ef8a 50%, #d4af37 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    font-size: 1.5rem;
+    color: #1a1a2e;
+    box-shadow: 0 10px 30px rgba(212, 175, 55, 0.3);
+}
+
+.title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 0.5rem;
+}
+
+.subtitle {
+    font-size: 0.9rem;
+    color: #888;
+    margin: 0;
+}
+
+.form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.fieldGroup {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    flex: 1;
+}
+
+.label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.inputWrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input {
+    width: 100%;
+    padding: 1.1rem 1rem;
+    /* More vertical padding */
+    padding-right: 120px;
+    background: rgba(255, 255, 255, 0.05);
+    /* Slightly lighter background */
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    /* Thinner, distinct border */
+    border-radius: 8px;
+    /* Slightly less rounded, more standard */
+    color: #fff;
+    font-size: 0.9rem;
+    /* Smaller text (~14px) */
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    /* Standard font */
+    letter-spacing: 0.5px;
+    /* Normal spacing */
+    transition: all 0.2s ease;
+}
+
+.input::placeholder {
+    color: #666;
+    /* Lighter placeholder */
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
+}
+
+.input:focus {
+    outline: none;
+    border-color: #d4af37;
+    background: rgba(255, 255, 255, 0.08);
+    box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15);
+}
+
+.input.error {
+    border-color: #ff4d4d;
+    box-shadow: 0 0 0 3px rgba(255, 77, 77, 0.15);
+}
+
+.row {
+    display: flex;
+    gap: 1rem;
+}
+
+.row .input {
+    padding-right: 3rem;
+}
+
+.cardIcons {
+    position: absolute;
+    right: 1rem;
+    display: flex;
+    gap: 0.35rem;
+    align-items: center;
+}
+
+.cardIconSmall {
+    height: 20px;
+    width: auto;
+    opacity: 0.6;
+    transition: opacity 0.2s ease;
+    border-radius: 4px;
+    /* Rounded corners */
+}
+
+.cardIconLarge {
+    height: 28px;
+    width: auto;
+    animation: cardPop 0.3s ease;
+    border-radius: 4px;
+    /* Rounded corners */
+}
+
+@keyframes cardPop {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.cvvIcon {
+    position: absolute;
+    right: 1rem;
+    color: #d4af37;
+    font-size: 0.9rem;
+}
+
+.submitButton {
+    width: 100%;
+    padding: 1rem 2rem;
+    background: linear-gradient(135deg, #d4af37 0%, #f7ef8a 50%, #d4af37 100%);
+    background-size: 200% 200%;
+    border: none;
+    border-radius: 12px;
+    color: #1a1a2e;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(212, 175, 55, 0.3);
+    margin-top: 0.5rem;
+}
+
+.submitButton:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(212, 175, 55, 0.4);
+    background-position: 100% 100%;
+}
+
+.submitButton:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.submitButton:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+
+.submitButton.success {
+    background: linear-gradient(135deg, #4caf50 0%, #81c784 50%, #4caf50 100%);
+    box-shadow: 0 4px 20px rgba(76, 175, 80, 0.3);
+}
+
+.secure {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    font-size: 0.8rem;
+    color: #4caf50;
+}
+
+.secure i {
+    font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .modal {
+        padding: 1.5rem;
+        border-radius: 20px;
+    }
+
+    .title {
+        font-size: 1.25rem;
+    }
+
+    .input {
+        font-size: 1rem;
+        padding: 0.875rem 1rem;
+        padding-right: 100px;
+    }
+
+    .row .input {
+        padding-right: 2.5rem;
+    }
+
+    .cardIconSmall {
+        height: 16px;
+    }
+
+    .cardIconLarge {
+        height: 24px;
+    }
+}

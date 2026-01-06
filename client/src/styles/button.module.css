@@ -1,0 +1,110 @@
+/* CTA Button */
+.ctaButton {
+    display: inline-block;
+    background: linear-gradient(135deg, #d4af37 0%, #b8941f 100%);
+    color: white;
+    font-size: 1.5rem;
+    font-weight: 600;
+    padding: 1.5rem 4rem;
+    border-radius: 70px;
+    text-decoration: none;
+    transition: all 0.4s ease;
+    box-shadow:
+        0 20px 40px rgba(212, 175, 55, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 2px 0 rgba(255, 255, 255, 0.4);
+    position: relative;
+    overflow: hidden;
+    margin-top: 1rem;
+    letter-spacing: 0.5px;
+    border: none;
+    cursor: pointer;
+    animation: fadeIn 1s ease-out forwards;
+}
+
+.ctaButton:hover {
+    transform: translateY(-5px);
+    box-shadow:
+        0 25px 50px rgba(212, 175, 55, 0.4),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 2px 0 rgba(255, 255, 255, 0.4);
+}
+
+.ctaButton:active {
+    transform: translateY(0);
+    box-shadow:
+        0 10px 20px rgba(212, 175, 55, 0.3),
+        0 0 0 1px rgba(255, 255, 255, 0.1),
+        inset 0 2px 0 rgba(255, 255, 255, 0.4);
+}
+
+.ctaButton::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.7s ease;
+}
+
+.ctaButton:hover::after {
+    left: 100%;
+}
+
+/* Processing state */
+.processing {
+    pointer-events: none;
+    transform: scale(0.95);
+    box-shadow: 0 5px 15px rgba(212, 175, 55, 0.3);
+}
+
+/* Success state */
+.success {
+    background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .ctaButton {
+        font-size: 1.3rem;
+        padding: 1.2rem 3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .ctaButton {
+        font-size: 1.1rem;
+        padding: 1rem 2.5rem;
+    }
+}
+
+/* Dark Theme */
+@media (prefers-color-scheme: dark) {
+    .ctaButton {
+        box-shadow:
+            0 20px 40px rgba(212, 175, 55, 0.2),
+            0 0 0 1px rgba(255, 255, 255, 0.05),
+            inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    }
+
+    .ctaButton:hover {
+        box-shadow:
+            0 25px 50px rgba(212, 175, 55, 0.3),
+            0 0 0 1px rgba(255, 255, 255, 0.05),
+            inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}

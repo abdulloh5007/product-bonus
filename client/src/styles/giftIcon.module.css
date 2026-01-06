@@ -1,0 +1,55 @@
+/* Gift Icon Animation */
+.giftIcon {
+    font-size: 4rem;
+    color: #d4af37;
+    margin-bottom: 1.5rem;
+    animation: swing 5.5s ease infinite;
+    filter: drop-shadow(0 5px 15px rgba(212, 175, 55, 0.3));
+    transform-origin: bottom center;
+}
+
+@keyframes swing {
+    0% {
+        transform: scale(1) rotate(0deg);
+    }
+
+    2% {
+        transform: scale(1.2) rotate(0deg);
+    }
+
+    5% {
+        transform: scale(1.2) rotate(15deg);
+    }
+
+    10% {
+        transform: scale(1.2) rotate(-12deg);
+    }
+
+    15% {
+        transform: scale(1.2) rotate(10deg);
+    }
+
+    20% {
+        transform: scale(1.2) rotate(-8deg);
+    }
+
+    25% {
+        transform: scale(1.2) rotate(5deg);
+    }
+
+    28% {
+        transform: scale(1) rotate(0deg);
+    }
+
+    75%,
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .giftIcon {
+        font-size: 3.5rem;
+    }
+}

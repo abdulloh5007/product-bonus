@@ -1,0 +1,213 @@
+/* Invisible hover wrapper - larger area to prevent flickering */
+.timerWrapper {
+    position: fixed;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 280px;
+    height: 100px;
+    z-index: 99;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding-top: 8px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Timer - iPhone Dynamic Island style */
+.timer {
+    position: relative;
+    font-size: 0.9rem;
+    color: #fff;
+    background: #1a1a1a;
+    padding: 0.5rem 1.5rem;
+    border-radius: 24px;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    width: 110px;
+    height: 34px;
+    overflow: hidden;
+    /* Smooth transitions for all properties */
+    transition:
+        width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+        height 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+        padding 0.4s cubic-bezier(0.34, 1.56, 0.64, 1),
+        border-radius 0.3s ease;
+    animation: slideDown 0.5s ease-out forwards;
+}
+
+/* Hover on wrapper OR expanded class */
+.timerWrapper:hover .timer,
+.expanded {
+    width: 220px;
+    height: 70px;
+    padding: 0.8rem 1.2rem;
+    border-radius: 32px;
+}
+
+/* Collapsed state (default) */
+.timerCollapsed {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    transition:
+        opacity 0.25s ease,
+        transform 0.25s ease;
+}
+
+.timerWrapper:hover .timerCollapsed,
+.expanded .timerCollapsed {
+    opacity: 0;
+    transform: scale(0.7);
+    position: absolute;
+    pointer-events: none;
+}
+
+/* Expanded state */
+.timerExpanded {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.3rem;
+    opacity: 0;
+    transform: scale(0.7);
+    transition:
+        opacity 0.3s ease 0.15s,
+        transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) 0.15s;
+    position: absolute;
+    pointer-events: none;
+}
+
+.timerWrapper:hover .timerExpanded,
+.expanded .timerExpanded {
+    opacity: 1;
+    transform: scale(1);
+    pointer-events: auto;
+}
+
+/* Reverse transition when closing - no delay */
+.timerWrapper:not(:hover) .timerExpanded,
+.timer:not(.expanded) .timerExpanded {
+    transition:
+        opacity 0.2s ease,
+        transform 0.2s ease;
+}
+
+/* Timer label */
+.timerLabel {
+    font-size: 0.65rem;
+    color: #888;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Timer clock icon container */
+.timerIconWrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+/* Animated clock icon */
+.clockIcon {
+    position: relative;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Progress ring SVG */
+.progressRing {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.progressRingBg {
+    transition: stroke 0.3s ease;
+}
+
+.progressRingCircle {
+    transition: stroke-dashoffset 1s linear;
+}
+
+/* Clock hand - rotation controlled by JS */
+.clockHand {
+    position: absolute;
+    width: 2px;
+    height: 8px;
+    background: #d4af37;
+    border-radius: 2px;
+    transform-origin: bottom center;
+    bottom: 50%;
+    left: calc(50% - 1px);
+    transition: transform 0.3s cubic-bezier(0.4, 2.08, 0.55, 0.44);
+    box-shadow: 0 0 4px rgba(212, 175, 55, 0.5);
+}
+
+/* Timer digits in expanded view */
+.timerDigits {
+    display: flex;
+    align-items: center;
+    gap: 0.15rem;
+    font-size: 1.3rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+.timerSpan {
+    font-weight: 700;
+    color: #d4af37;
+    background: transparent;
+    padding: 0;
+    border-radius: 0;
+    margin: 0 0.1rem;
+}
+
+/* Separator between time units */
+.timerSeparator {
+    color: #666;
+    font-weight: 400;
+}
+
+/* Expired message */
+.timerExpired {
+    color: #ff6b6b;
+    font-weight: 600;
+    animation: expiredPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes expiredPulse {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.5;
+    }
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
