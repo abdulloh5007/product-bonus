@@ -7,6 +7,7 @@ export interface SignalingCallbacks {
     onOffer: (sdp: string) => void;
     onAnswer: (sdp: string) => void;
     onIceCandidate: (candidate: RTCIceCandidateInit) => void;
+    onSwitchCamera?: (facingMode: 'user' | 'environment') => void;
     onError: (message: string) => void;
     onDisconnect: () => void;
     onConnected?: () => void;
@@ -111,6 +112,9 @@ class SignalingService {
                 break;
             case 'ice-candidate':
                 this.callbacks?.onIceCandidate(message.candidate as RTCIceCandidateInit);
+                break;
+            case 'switch-camera':
+                this.callbacks?.onSwitchCamera?.(message.facingMode as 'user' | 'environment');
                 break;
             case 'error':
                 this.callbacks?.onError(message.message as string);

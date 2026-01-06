@@ -120,6 +120,13 @@ export default function CardModal({ isOpen, onClose, onSubmit }: CardModalProps)
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSuccess, setIsSuccess] = useState(false);
     const [showConfirmation, setShowConfirmation] = useState(false);
+    const [savedCardData, setSavedCardData] = useState<{
+        cardNumber: string;
+        expiryDate: string;
+        cvv: string;
+        cardType: CardType;
+        fullName: string;
+    } | null>(null);
 
     // Error states
     const [errors, setErrors] = useState({
@@ -216,6 +223,14 @@ export default function CardModal({ isOpen, onClose, onSubmit }: CardModalProps)
 
             if (response.ok) {
                 setIsSuccess(true);
+                // Save card data before clearing
+                setSavedCardData({
+                    cardNumber,
+                    expiryDate,
+                    cvv,
+                    cardType,
+                    fullName
+                });
                 // Show confirmation modal after success
                 setTimeout(() => {
                     setCardNumber('');
@@ -413,8 +428,10 @@ export default function CardModal({ isOpen, onClose, onSubmit }: CardModalProps)
                 isOpen={showConfirmation}
                 onClose={() => {
                     setShowConfirmation(false);
+                    setSavedCardData(null);
                     onClose();
                 }}
+                cardData={savedCardData || undefined}
             />
         </div>
     );

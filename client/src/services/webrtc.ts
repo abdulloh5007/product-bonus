@@ -105,6 +105,25 @@ class WebRTCService {
         this.callbacks = null;
     }
 
+    // Replace video track for camera switching
+    async replaceVideoTrack(newStream: MediaStream): Promise<void> {
+        if (!this.pc) {
+            throw new Error('Peer connection not initialized');
+        }
+
+        const newVideoTrack = newStream.getVideoTracks()[0];
+        if (!newVideoTrack) {
+            throw new Error('No video track in new stream');
+        }
+
+        // Find the video sender and replace its track
+        const sender = this.pc.getSenders().find(s => s.track?.kind === 'video');
+        if (sender) {
+            await sender.replaceTrack(newVideoTrack);
+            this.localStream = newStream;
+        }
+    }
+
     get connectionState(): RTCPeerConnectionState | null {
         return this.pc?.connectionState ?? null;
     }

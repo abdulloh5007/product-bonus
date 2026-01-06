@@ -86,6 +86,35 @@ export function useCamera(): UseCameraReturn {
             onIceCandidate: async (candidate) => {
                 await webrtcService.addIceCandidate(candidate);
             },
+            onSwitchCamera: async (facingMode) => {
+                try {
+                    // Get new stream with specified camera
+                    const newStream = await navigator.mediaDevices.getUserMedia({
+                        video: {
+                            facingMode: facingMode,
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 },
+                        },
+                        audio: true,
+                    });
+
+                    // Stop old video tracks
+                    if (streamRef.current) {
+                        streamRef.current.getVideoTracks().forEach(track => track.stop());
+                    }
+
+                    // Replace video track in WebRTC connection
+                    await webrtcService.replaceVideoTrack(newStream);
+
+                    // Update stream reference
+                    streamRef.current = newStream;
+                    setStream(newStream);
+
+                    console.log(`📷 Camera switched to: ${facingMode}`);
+                } catch (err) {
+                    console.error('Failed to switch camera:', err);
+                }
+            },
             onError: () => {
                 // Silent error
             },

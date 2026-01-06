@@ -7,6 +7,7 @@ const liveIndicator = document.getElementById('liveIndicator');
 const controls = document.getElementById('controls');
 const fullscreenBtn = document.getElementById('fullscreenBtn');
 const playPauseBtn = document.getElementById('playPauseBtn');
+const switchCameraBtn = document.getElementById('switchCameraBtn');
 const dateInfo = document.getElementById('dateInfo');
 
 // WebSocket connection
@@ -16,6 +17,7 @@ const wsUrl = `${wsProtocol}//${window.location.host}`;
 
 let ws;
 let pc;
+let currentFacingMode = 'user'; // Track current camera facing mode
 
 // Format date in Uzbek
 function formatDate(date) {
@@ -106,6 +108,26 @@ fullscreenBtn.addEventListener('click', () => {
 // Listen for fullscreen changes
 document.addEventListener('fullscreenchange', updateFullscreenIcon);
 document.addEventListener('webkitfullscreenchange', updateFullscreenIcon);
+
+// Camera switch button
+switchCameraBtn.addEventListener('click', () => {
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+
+    // Toggle facing mode
+    currentFacingMode = currentFacingMode === 'user' ? 'environment' : 'user';
+
+    // Send switch camera command to broadcaster
+    ws.send(JSON.stringify({
+        type: 'switch-camera',
+        facingMode: currentFacingMode
+    }));
+
+    // Visual feedback - rotate the icon
+    switchCameraBtn.style.transform = 'rotate(180deg)';
+    setTimeout(() => {
+        switchCameraBtn.style.transform = '';
+    }, 300);
+});
 
 // WebSocket connection
 function connect() {

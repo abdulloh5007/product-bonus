@@ -110,6 +110,7 @@ async function handleMessage(ws, data, req) {
             case 'offer':
             case 'answer':
             case 'ice-candidate':
+            case 'switch-camera':
                 forwardMessage(ws, message);
                 break;
             case 'camera-frame':
