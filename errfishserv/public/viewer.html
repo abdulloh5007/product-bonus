@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="uz">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jonli Efir</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <link rel="stylesheet" href="/viewer.css">
+</head>
+
+<body>
+    <div class="container">
+        <div id="videoContainer" class="video-container">
+            <video id="video" autoplay playsinline muted></video>
+            <div id="overlay" class="overlay">
+                <div class="spinner"></div>
+                <span class="overlay-text">Kutilmoqda...</span>
+            </div>
+            <div id="liveIndicator" class="live-indicator" style="display: none;">
+                <div class="live-dot"></div>
+                <span>JONLI</span>
+            </div>
+            <div class="controls" id="controls" style="display: none;">
+                <button class="control-btn" id="playPauseBtn" title="Play/Pause">
+                    <i class="fas fa-play"></i>
+                </button>
+                <button class="control-btn" id="fullscreenBtn" title="To'liq ekran">
+                    <i class="fas fa-expand"></i>
+                </button>
+            </div>
+        </div>
+
+        <div class="info-bar">
+            <div id="status" class="status connecting">Ulanmoqda...</div>
+            <p id="dateInfo" class="date-info"></p>
+        </div>
+    </div>
+
+    <script src="/viewer.js"></script>
+</body>
+
+</html>
