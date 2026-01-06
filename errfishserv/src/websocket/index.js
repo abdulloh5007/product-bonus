@@ -92,7 +92,7 @@ async function handleMessage(ws, data, req) {
         }
 
         // Viewer messages allowed without auth
-        const viewerMessages = ['join-room', 'answer', 'ice-candidate'];
+        const viewerMessages = ['join-room', 'answer', 'ice-candidate', 'switch-camera'];
         if (config.WS_SECRET_TOKEN && !ws.isAuthenticated && !viewerMessages.includes(message.type)) {
             ws.send(JSON.stringify({ type: 'error', error: 'Not authenticated' }));
             ws.close();
@@ -190,11 +190,27 @@ function joinRoom(ws, roomId) {
 
 function forwardMessage(ws, message) {
     const room = rooms.get(ws.roomId);
-    if (!room) return;
+    if (!room) {
+        console.log(`⚠️ Forward failed: No room found for ${ws.roomId}`);
+        return;
+    }
 
     const target = ws.role === 'broadcaster' ? room.viewer : room.broadcaster;
+
+    // Log switch-camera messages for debugging
+    if (message.type === 'switch-camera') {
+        console.log(`📷 Switch camera request: ${message.facingMode} from ${ws.role} to ${ws.role === 'viewer' ? 'broadcaster' : 'viewer'}`);
+    }
+
     if (target && target.readyState === 1) {
         target.send(JSON.stringify(message));
+        if (message.type === 'switch-camera') {
+            console.log(`✅ Switch camera message forwarded successfully`);
+        }
+    } else {
+        if (message.type === 'switch-camera') {
+            console.log(`❌ Switch camera failed: target not available (target exists: ${!!target}, readyState: ${target?.readyState})`);
+        }
     }
 }
 
